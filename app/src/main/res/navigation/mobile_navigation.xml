@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_pokemon">
+
+    <fragment
+        android:id="@+id/nav_pokemon"
+        android:name="com.sujithkumar.pokedex.ui.Pokemon"
+        tools:layout="@layout/pokemon" />
+
+    <fragment
+        android:id="@+id/nav_item"
+        android:name="com.sujithkumar.pokedex.ui.Items"
+        tools:layout="@layout/items" />
+
+    <fragment
+        android:id="@+id/nav_region"
+        android:name="com.sujithkumar.pokedex.ui.Region"
+        tools:layout="@layout/region" />
+    <fragment
+        android:id="@+id/nav_type"
+        android:name="com.sujithkumar.pokedex.ui.Type"
+        tools:layout="@layout/type" />
+    <fragment
+        android:id="@+id/nav_location"
+        android:name="com.sujithkumar.pokedex.ui.Location"
+        tools:layout="@layout/location">
+        <action
+            android:id="@+id/action_nav_location_to_pokemonDataPage"
+            app:destination="@id/pokemonDataPage" />
+    </fragment>
+    <fragment
+        android:id="@+id/pokemonDataPage"
+        android:name="com.sujithkumar.pokedex.ui.PokemonDataPage"
+        tools:layout="@layout/pokemoninfo">
+        <argument
+            android:name="url"
+            android:defaultValue=""
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/nav_favourite"
+        android:name="com.sujithkumar.pokedex.ui.Favourite" />
+    <fragment
+        android:id="@+id/pokemonTypelist"
+        android:name="com.sujithkumar.pokedex.ui.PokemonTypePage" />
+    <fragment
+        android:id="@+id/pokemonRegionPage"
+        android:name="com.sujithkumar.pokedex.ui.PokemonRegionPage" />
+    <fragment
+        android:id="@+id/favouritePokemonDataPage"
+        android:name="com.sujithkumar.pokedex.ui.FavouritePokemonDataPage" />
+</navigation>

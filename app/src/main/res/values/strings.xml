@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">Pokedex</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+
+    <string name="home_second">Home Second</string>
+    <string name="pokemon">Pokemon</string>
+    <string name="items_location"><![CDATA[Items & Location]]></string>
+    <string name="region">Region</string>
+    <string name="sujithkumar216802_gmail_com">sujithkumar216802@gmail.com</string>
+    <string name="location">LOCATION</string>
+    <string name="locationn">Location</string>
+    <string name="type">TYPE</string>
+    <string name="typee">Type</string>
+    <string name="item">Item</string>
+    <string name="favourite">Favourite</string>
+    <string name="image_not_available">IMAGE NOT AVAILABLE</string>
+    <string name="search">Search</string>
+    <string name="itemcapital">ITEM</string>
+    <string name="favourites">FAVOURITES</string>
+    <string name="share">SHARE</string>
+    <string name="evolution">EVOLUTION</string>
+    <string name="abilities">ABILITIES</string>
+    <string name="move">MOVE</string>
+</resources>

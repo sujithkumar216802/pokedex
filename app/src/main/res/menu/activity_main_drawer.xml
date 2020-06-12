@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_pokemon"
+            android:icon="@drawable/type"
+            android:title="@string/pokemon" />
+        <item
+            android:id="@+id/nav_item"
+            android:icon="@drawable/type"
+            android:title="@string/item" />
+        <item
+            android:id="@+id/nav_location"
+            android:icon="@drawable/ic_baseline_location_on_24"
+            android:title="@string/locationn" />
+        <item
+            android:id="@+id/nav_type"
+            android:icon="@drawable/type"
+            android:title="@string/typee" />
+        <item
+            android:id="@+id/nav_region"
+            android:icon="@drawable/ic_baseline_map_24"
+            android:title="@string/region" />
+        <item
+            android:id="@+id/nav_favourite"
+            android:icon="@drawable/ic_baseline_favorite_24"
+            android:title="@string/favourite" />
+    </group>
+</menu>
