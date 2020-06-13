@@ -139,6 +139,8 @@ public class Pokemon extends Fragment {
                         isloading = true;
                         load.setVisibility(View.VISIBLE);
                         getsprite();
+                    } else {
+                        Snackbar.make(requireView(), "END OF PAGE", BaseTransientBottomBar.LENGTH_LONG).show();
                     }
 
                 }
@@ -253,7 +255,7 @@ public class Pokemon extends Fragment {
 
                     assert response.body() != null;
                     all.addAll(response.body().getResults());
-                    adapter.change(all,spritelink);
+                    adapter.change(all, spritelink);
                     getsprite();
                 }
 
@@ -294,9 +296,9 @@ public class Pokemon extends Fragment {
                 search = true;
                 if (newText == null || newText.length() == 0) {
                     search = false;
-                    isloading=false;
+                    isloading = false;
                     load.setVisibility(View.GONE);
-                    Searchstring="";
+                    Searchstring = "";
                     adapter.change(all, spritelink);
                 } else {
                     isloading = true;

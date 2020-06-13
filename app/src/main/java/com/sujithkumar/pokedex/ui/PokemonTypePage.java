@@ -154,6 +154,9 @@ public class PokemonTypePage extends Fragment {
                         getsprite();
                         load.setVisibility(View.VISIBLE);
                     }
+                    else {
+                        Snackbar.make(requireView(), "END OF PAGE", BaseTransientBottomBar.LENGTH_LONG).show();
+                    }
 
                 }
 
@@ -308,9 +311,9 @@ public class PokemonTypePage extends Fragment {
                 search = true;
                 if (newText == null || newText.length() == 0) {
                     search = false;
-                    isloading=false;
+                    isloading = false;
                     load.setVisibility(View.GONE);
-                    Searchstring="";
+                    Searchstring = "";
                     adapter.change(all, spritelink);
                 } else {
                     Searchstring = newText;
@@ -329,6 +332,11 @@ public class PokemonTypePage extends Fragment {
             int tempp = spritelink.size();
             for (int i = tempp; i < Math.min(tempp + 20, all.size()); i++) {
                 requests.add(json.getpokemon(all.get(i).getUrl()));
+            }
+            if (requests.size() == 0) {
+                isloading = false;
+                load.setVisibility(View.GONE);
+                Snackbar.make(requireView(), "END OF PAGE", BaseTransientBottomBar.LENGTH_LONG).show();
             }
             Observable.zip(requests, objects -> {
                 for (Object object : objects) {

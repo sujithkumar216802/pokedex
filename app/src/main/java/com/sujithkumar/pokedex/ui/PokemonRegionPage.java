@@ -161,6 +161,9 @@ public class PokemonRegionPage extends Fragment {
                         getsprite();
                         load.setVisibility(View.VISIBLE);
                     }
+                    else {
+                        Snackbar.make(requireView(), "END OF PAGE", BaseTransientBottomBar.LENGTH_LONG).show();
+                    }
 
                 }
 

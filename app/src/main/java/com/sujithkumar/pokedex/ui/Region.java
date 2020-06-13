@@ -158,9 +158,9 @@ public class Region extends Fragment {
                 search = true;
                 if (newText == null || newText.length() == 0) {
                     search = false;
-                    isloading=false;
+                    isloading = false;
                     load.setVisibility(View.GONE);
-                    Searchstring="";
+                    Searchstring = "";
                     adapter.change(regionlist);
                 } else {
                     searchname = new ArrayList<>();
@@ -187,8 +187,8 @@ public class Region extends Fragment {
             }
         }
         adapter.change(searchname);
-        if (searchname.size()==0){
-            Snackbar.make(requireView(),"Not Available",BaseTransientBottomBar.LENGTH_LONG).show();
+        if (searchname.size() == 0) {
+            Snackbar.make(requireView(), "Not Available", BaseTransientBottomBar.LENGTH_LONG).show();
         }
     }
 
@@ -198,7 +198,7 @@ public class Region extends Fragment {
         if (i <= regionlist.size() && i > 0)
             searchname.add(regionlist.get(i - 1));
         else
-            Snackbar.make(requireView(),"ID Not Available",BaseTransientBottomBar.LENGTH_LONG).show();
+            Snackbar.make(requireView(), "ID Not Available", BaseTransientBottomBar.LENGTH_LONG).show();
         adapter.change(searchname);
 
     }

@@ -124,6 +124,9 @@ public class Items extends Fragment {
                         load.setVisibility(View.VISIBLE);
                         getsprite();
                     }
+                    else {
+                        Snackbar.make(requireView(), "END OF PAGE", BaseTransientBottomBar.LENGTH_LONG).show();
+                    }
 
                 }
 
