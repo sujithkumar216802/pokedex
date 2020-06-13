@@ -32,7 +32,6 @@ import com.sujithkumar.pokedex.model.NameandUrl;
 import com.sujithkumar.pokedex.viewmodel;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,7 +44,7 @@ public class FavouritePokemonDataPage extends Fragment {
     LinearLayoutManager abilitylayout, movelayout, evolutionlayout;
     viewmodel rep;
     FavouritePokemon favouritePokemon;
-    TextView name, height, weight, base_experience, hp, attack, defence, specialattack, specialdefence, speed, type, notavailable;
+    TextView name, height, weight, base_experience, hp, attack, defence, specialattack, specialdefence, speed, type, notavailable, id;
     ImageView imageView;
     ArrayList<String> abilitylist = new ArrayList<>();
     ArrayList<String> movelist = new ArrayList<>();
@@ -74,6 +73,7 @@ public class FavouritePokemonDataPage extends Fragment {
 
 
     void initiate(View view) {
+        id = view.findViewById(R.id.ID);
         notavailable = view.findViewById(R.id.notavailable);
         name = view.findViewById(R.id.name);
         height = view.findViewById(R.id.height);
@@ -99,6 +99,7 @@ public class FavouritePokemonDataPage extends Fragment {
         if (favouritePokemon.getImage().length == 0)
             notavailable.setVisibility(View.VISIBLE);
         startPostponedEnterTransition();
+        id.setText("ID : " + favouritePokemon.getId());
         name.setText("Name : " + favouritePokemon.getName());
         height.setText("Height : " + favouritePokemon.getHeight());
         weight.setText("Weight : " + favouritePokemon.getWeight());

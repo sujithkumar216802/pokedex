@@ -26,6 +26,7 @@ import androidx.navigation.fragment.FragmentNavigator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -82,6 +83,7 @@ public class PokemonTypePage extends Fragment {
     Json json;
     Target target;
     TextView title;
+    SwipeRefreshLayout refresh;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -92,13 +94,14 @@ public class PokemonTypePage extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.pokemontypelist, container, false);
+        return inflater.inflate(R.layout.pokemon, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         rep = new ViewModelProvider((ViewModelStoreOwner) requireContext()).get(viewmodel.class);
+        refresh = view.findViewById(R.id.refresh);
         recycler = view.findViewById(R.id.recycler);
         title = view.findViewById(R.id.textView2);
         title.setText("Pokemon Type - " + rep.getCurrenttypename());
@@ -121,37 +124,12 @@ public class PokemonTypePage extends Fragment {
         setclicklistner(view);
         recycler.setAdapter(adapter);
 
-        if (all.size() == 0) {
-            Call<TypePokemon> getallpokemon = json.gettype(rep.getCurrenttype());
-            getallpokemon.enqueue(new Callback<TypePokemon>() {
-                @Override
-                public void onResponse(Call<TypePokemon> call, Response<TypePokemon> response) {
-                    if (!response.isSuccessful()) {
-                        Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
-                                .show();
-                        load.setVisibility(View.GONE);
-                        isloading = false;
-                        return;
-                    }
+        refresh.setOnRefreshListener(() -> {
+            hideKeyboard();
+            Navigation.findNavController(view).navigate(R.id.action_pokemonTypelist_self);
+        });
 
-                    for (PokemonForType x : response.body().getPokemon()) {
-                        all.add(x.getPokemon());
-                    }
-                    getsprite();
-                }
-
-                @Override
-                public void onFailure(Call<TypePokemon> call, Throwable t) {
-                    Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
-                            .show();
-                    load.setVisibility(View.GONE);
-                    isloading = false;
-                }
-            });
-        } else {
-            isloading = false;
-            load.setVisibility(View.GONE);
-        }
+        init(view);
 
         recycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -274,6 +252,42 @@ public class PokemonTypePage extends Fragment {
 
     }
 
+
+    void init(View view) {
+        if (all.size() == 0) {
+            Call<TypePokemon> getallpokemon = json.gettype(rep.getCurrenttype());
+            getallpokemon.enqueue(new Callback<TypePokemon>() {
+                @Override
+                public void onResponse(Call<TypePokemon> call, Response<TypePokemon> response) {
+                    if (!response.isSuccessful()) {
+                        Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                                .show();
+                        load.setVisibility(View.GONE);
+                        isloading = false;
+                        return;
+                    }
+
+                    for (PokemonForType x : response.body().getPokemon()) {
+                        all.add(x.getPokemon());
+                    }
+                    getsprite();
+                }
+
+                @Override
+                public void onFailure(Call<TypePokemon> call, Throwable t) {
+                    Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                            .show();
+                    load.setVisibility(View.GONE);
+                    isloading = false;
+                }
+            });
+        } else {
+            isloading = false;
+            load.setVisibility(View.GONE);
+        }
+        refresh.setRefreshing(false);
+    }
+
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -294,6 +308,9 @@ public class PokemonTypePage extends Fragment {
                 search = true;
                 if (newText == null || newText.length() == 0) {
                     search = false;
+                    isloading=false;
+                    load.setVisibility(View.GONE);
+                    Searchstring="";
                     adapter.change(all, spritelink);
                 } else {
                     Searchstring = newText;
@@ -360,11 +377,14 @@ public class PokemonTypePage extends Fragment {
             for (int i = tempp; i < Math.min(tempp + 20, searchname.size()); i++) {
                 requests.add(json.getpokemon(searchname.get(i).getUrl()));
             }
-            temp(Searchstring, requests);
-
+            if (requests.size() > 0)
+                temp(Searchstring, requests);
+            else {
+                isloading = false;
+                load.setVisibility(View.GONE);
+                Snackbar.make(requireView(), "Nothing left to load", BaseTransientBottomBar.LENGTH_LONG).show();
+            }
         }
-
-
     }
 
 
@@ -472,6 +492,7 @@ public class PokemonTypePage extends Fragment {
 
         adapter.change(searchname, searchsprite);
         isloading = true;
+        load.setVisibility(View.VISIBLE);
         getsprite();
     }
 

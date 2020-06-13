@@ -18,7 +18,6 @@ import android.widget.SearchView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.FragmentNavigator;
@@ -31,11 +30,9 @@ import com.google.android.material.snackbar.Snackbar;
 import com.sujithkumar.pokedex.FavouritePokemon;
 import com.sujithkumar.pokedex.R;
 import com.sujithkumar.pokedex.adapter.FavouriteAdapter;
-import com.sujithkumar.pokedex.favouriterecyclerclicklistner;
 import com.sujithkumar.pokedex.viewmodel;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Favourite extends Fragment {
 
@@ -55,6 +52,12 @@ public class Favourite extends Fragment {
 
     boolean search;
     boolean isloading;
+
+    static boolean isNumeric(final String string) {
+
+        return string.chars().allMatch(Character::isDigit);
+
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -159,22 +162,29 @@ public class Favourite extends Fragment {
                 search = true;
                 if (newText == null || newText.length() == 0) {
                     search = false;
+                    isloading = false;
+                    load.setVisibility(View.GONE);
+                    Searchstring = "";
                     adapter.change(name, images);
                 } else {
+                    searchlist = new ArrayList<>();
+                    searchname = new ArrayList<>();
+                    searchimages = new ArrayList<>();
                     Searchstring = newText;
-                    search();
+                    if (!isNumeric(newText)) {
+                        search();
+                    } else {
+                        searchid();
+                    }
                 }
                 return false;
             }
         });
-        searchView.setQueryHint("Name ");
+        searchView.setQueryHint("Name /ID");
 
     }
 
     void search() {
-        searchlist = new ArrayList<>();
-        searchname = new ArrayList<>();
-        searchimages = new ArrayList<>();
         for (int i = 0; i < name.size(); i++) {
             if (name.get(i).toLowerCase().contains(Searchstring.toLowerCase())) {
                 searchname.add(name.get(i));
@@ -183,6 +193,20 @@ public class Favourite extends Fragment {
             }
         }
         adapter.change(searchname, searchimages);
+    }
+
+    void searchid() {
+        int id = Integer.parseInt(Searchstring);
+        for (int i = 0; i < favlist.size(); i++) {
+            if (favlist.get(i).getId() == id) {
+                searchname.add(name.get(i));
+                searchimages.add(images.get(i));
+                searchlist.add(favlist.get(i));
+                break;
+            }
+        }
+        adapter.change(searchname, searchimages);
+
     }
 
 

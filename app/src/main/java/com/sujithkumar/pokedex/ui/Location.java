@@ -18,8 +18,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -55,6 +57,8 @@ public class Location extends Fragment {
     int pastvisibleitemcount = 0;
     Json json;
     ArrayList<NameandUrl> searchname = new ArrayList<>();
+    SwipeRefreshLayout refresh;
+
 
     static boolean isNumeric(final String string) {
 
@@ -82,43 +86,18 @@ public class Location extends Fragment {
         layout = new GridLayoutManager(requireContext(), 1);
         recycler.setLayoutManager(layout);
         load = view.findViewById(R.id.progressBar);
-        json = api.getapi().create(Json.class);
+        refresh = view.findViewById(R.id.refresh);
+        adapter = new OnlyNameAdapter(all);
+        recycler.setAdapter(adapter);
+        json = retrofit.getapi().create(Json.class);
         search = false;
+        refresh.setOnRefreshListener(() -> {
+            hideKeyboard();
+            Navigation.findNavController(view).navigate(R.id.action_nav_location_self);
+        });
 
-        if (all.size() == 0) {
-            Call<NameandUrlList> getalllocation = json.getlocationlistall();
-            getalllocation.enqueue(new Callback<NameandUrlList>() {
-                @Override
-                public void onResponse(Call<NameandUrlList> call, Response<NameandUrlList> response) {
-                    if (!response.isSuccessful()) {
-                        Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
-                                .show();
-                        load.setVisibility(View.GONE);
-                        isloading = false;
-                        return;
-                    }
-                    assert response.body() != null;
-                    all.addAll(response.body().getResults());
-                    adapter = new OnlyNameAdapter(all);
-                    recycler.setAdapter(adapter);
-                    isloading = false;
-                    load.setVisibility(View.GONE);
-                }
+        init(view);
 
-                @Override
-                public void onFailure(Call<NameandUrlList> call, Throwable t) {
-                    Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
-                            .show();
-                    load.setVisibility(View.GONE);
-                    isloading = false;
-                }
-            });
-        } else {
-            adapter = new OnlyNameAdapter(all);
-            recycler.setAdapter(adapter);
-            isloading = false;
-            load.setVisibility(View.GONE);
-        }
 
 
 /*
@@ -156,6 +135,44 @@ public class Location extends Fragment {
 
     }
 
+    void init(View view) {
+        if (all.size() == 0) {
+            Call<NameandUrlList> getalllocation = json.getlocationlistall();
+            getalllocation.enqueue(new Callback<NameandUrlList>() {
+                @Override
+                public void onResponse(Call<NameandUrlList> call, Response<NameandUrlList> response) {
+                    if (!response.isSuccessful()) {
+                        Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                                .show();
+                        load.setVisibility(View.GONE);
+                        isloading = false;
+                        return;
+                    }
+                    assert response.body() != null;
+                    all.addAll(response.body().getResults());
+                    adapter.change(all);
+                    isloading = false;
+                    load.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onFailure(Call<NameandUrlList> call, Throwable t) {
+                    Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                            .show();
+                    load.setVisibility(View.GONE);
+                    isloading = false;
+                }
+            });
+        } else {
+
+            adapter.notifyDataSetChanged();
+            isloading = false;
+            load.setVisibility(View.GONE);
+        }
+
+        refresh.setRefreshing(false);
+    }
+
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -176,8 +193,13 @@ public class Location extends Fragment {
                 search = true;
                 if (newText == null || newText.length() == 0) {
                     search = false;
+                    isloading = false;
+                    load.setVisibility(View.GONE);
+                    Searchstring = "";
                     adapter.change(all);
                 } else {
+                    isloading = true;
+                    load.setVisibility(View.VISIBLE);
                     searchname = new ArrayList<>();
                     adapter.change(searchname);
                     if (!isNumeric(newText)) {
@@ -201,7 +223,12 @@ public class Location extends Fragment {
                 searchname.add(all.get(i));
             }
         }
+        isloading = false;
+        load.setVisibility(View.GONE);
         adapter.change(searchname);
+        if (searchname.size() == 0) {
+            Snackbar.make(requireView(), "Not Available", BaseTransientBottomBar.LENGTH_LONG).show();
+        }
     }
 
     private void searchid(String id) {
@@ -211,7 +238,7 @@ public class Location extends Fragment {
             @Override
             public void onResponse(Call<LocationModel> call, Response<LocationModel> response) {
                 if (!response.isSuccessful()) {
-                    Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                    Snackbar.make(requireView(), "ID not available", BaseTransientBottomBar.LENGTH_LONG)
                             .show();
                     load.setVisibility(View.GONE);
                     isloading = false;
@@ -224,12 +251,14 @@ public class Location extends Fragment {
                     temp.setUrl(response.raw().request().url().toString());
                     searchname.add(temp);
                     adapter.change(searchname);
+                    load.setVisibility(View.GONE);
+                    isloading = false;
                 }
             }
 
             @Override
             public void onFailure(Call<LocationModel> call, Throwable t) {
-                Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                Snackbar.make(requireView(), "Network Issue", BaseTransientBottomBar.LENGTH_LONG)
                         .show();
                 load.setVisibility(View.GONE);
                 isloading = false;

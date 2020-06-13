@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -29,7 +30,6 @@ import com.sujithkumar.pokedex.R;
 import com.sujithkumar.pokedex.adapter.OnlyNameAdapter;
 import com.sujithkumar.pokedex.model.NameandUrl;
 import com.sujithkumar.pokedex.model.NameandUrlList;
-import com.sujithkumar.pokedex.recyclerclicklistner;
 import com.sujithkumar.pokedex.retrofit;
 import com.sujithkumar.pokedex.viewmodel;
 
@@ -50,6 +50,8 @@ public class Region extends Fragment {
     viewmodel rep;
     boolean search, isloading;
     String Searchstring;
+    SwipeRefreshLayout refresh;
+    Json json;
 
     static boolean isNumeric(final String string) {
 
@@ -67,6 +69,7 @@ public class Region extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        refresh = view.findViewById(R.id.refresh);
         recycler = view.findViewById(R.id.recycler);
         layout = new LinearLayoutManager(requireContext());
         recycler.setLayoutManager(layout);
@@ -84,12 +87,22 @@ public class Region extends Fragment {
                     null,
                     null);
         });
-        Json json = retrofit.getapi().create(Json.class);
-        Call<NameandUrlList> regionnlist = json.getregionlist();
+        json = retrofit.getapi().create(Json.class);
         search = false;
         isloading = true;
+        init(view);
+
+        refresh.setOnRefreshListener(() -> {
+            hideKeyboard();
+            Navigation.findNavController(view).navigate(R.id.action_nav_region_self);
+        });
 
 
+    }
+
+
+    void init(View view) {
+        Call<NameandUrlList> regionnlist = json.getregionlist();
         if (regionlist.size() == 0)
             regionnlist.enqueue(new Callback<NameandUrlList>() {
                 @Override
@@ -106,6 +119,7 @@ public class Region extends Fragment {
                     assert name != null;
                     regionlist.addAll(new ArrayList<>(name.getResults()));
                     adapter.notifyDataSetChanged();
+                    isloading = false;
                     load.setVisibility(View.GONE);
                 }
 
@@ -120,8 +134,7 @@ public class Region extends Fragment {
         else {
             load.setVisibility(View.GONE);
         }
-
-
+        refresh.setRefreshing(false);
     }
 
 
@@ -145,6 +158,9 @@ public class Region extends Fragment {
                 search = true;
                 if (newText == null || newText.length() == 0) {
                     search = false;
+                    isloading=false;
+                    load.setVisibility(View.GONE);
+                    Searchstring="";
                     adapter.change(regionlist);
                 } else {
                     searchname = new ArrayList<>();
@@ -171,6 +187,9 @@ public class Region extends Fragment {
             }
         }
         adapter.change(searchname);
+        if (searchname.size()==0){
+            Snackbar.make(requireView(),"Not Available",BaseTransientBottomBar.LENGTH_LONG).show();
+        }
     }
 
 
@@ -178,6 +197,8 @@ public class Region extends Fragment {
         int i = Integer.parseInt(id);
         if (i <= regionlist.size() && i > 0)
             searchname.add(regionlist.get(i - 1));
+        else
+            Snackbar.make(requireView(),"ID Not Available",BaseTransientBottomBar.LENGTH_LONG).show();
         adapter.change(searchname);
 
     }

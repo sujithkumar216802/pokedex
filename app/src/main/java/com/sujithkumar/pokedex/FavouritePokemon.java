@@ -12,7 +12,7 @@ public class FavouritePokemon {
     String evolution;
     String abilities;
     String moves;
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey
     private int id;
     private String name;
     private int height;
@@ -103,9 +103,6 @@ public class FavouritePokemon {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public String getName() {
         return name;

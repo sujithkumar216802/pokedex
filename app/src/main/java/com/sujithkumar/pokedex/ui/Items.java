@@ -18,8 +18,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -61,6 +63,7 @@ public class Items extends Fragment {
     Json json;
     ArrayList<NameandUrl> searchname = new ArrayList<>();
     ArrayList<String> searchsprite = new ArrayList<>();
+    SwipeRefreshLayout refresh;
 
     static boolean isNumeric(final String string) {
 
@@ -88,45 +91,16 @@ public class Items extends Fragment {
         layout = new GridLayoutManager(requireContext(), 1);
         recycler.setLayoutManager(layout);
         load = view.findViewById(R.id.progressBar);
+        refresh = view.findViewById(R.id.refresh);
         json = retrofit.getapi().create(Json.class);
         search = false;
-        isloading=true;
-
-
-        if (all.size() == 0) {
-            Call<NameandUrlList> getallitems = json.getitemlistall();
-            getallitems.enqueue(new Callback<NameandUrlList>() {
-                @Override
-                public void onResponse(Call<NameandUrlList> call, Response<NameandUrlList> response) {
-                    if (!response.isSuccessful()) {
-                        Snackbar.make(view, "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
-                                .show();
-                        load.setVisibility(View.GONE);
-                        isloading = false;
-                        return;
-                    }
-                    assert response.body() != null;
-                    all.addAll(response.body().getResults());
-                    adapter = new RecycleAdapter(all, spritelink);
-                    recycler.setAdapter(adapter);
-                    getsprite();
-                }
-
-                @Override
-                public void onFailure(Call<NameandUrlList> call, Throwable t) {
-                    Snackbar.make(view, "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
-                            .show();
-                    load.setVisibility(View.GONE);
-                    isloading = false;
-                }
-            });
-        } else {
-            adapter = new RecycleAdapter(all, spritelink);
-            recycler.setAdapter(adapter);
-            isloading = false;
-            load.setVisibility(View.GONE);
-        }
-
+        isloading = true;
+        adapter = new RecycleAdapter(all, spritelink);
+        recycler.setAdapter(adapter);
+        refresh.setOnRefreshListener(() -> {
+            hideKeyboard();
+            Navigation.findNavController(view).navigate(R.id.action_nav_item_self);
+        });
         recycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -143,12 +117,12 @@ public class Items extends Fragment {
                 if ((visibleitemcount + pastvisibleitemcount == totalitemcount) && (!isloading)) {
                     if (spritelink.size() != all.size() && !search) {
                         isloading = true;
-                        getsprite();
                         load.setVisibility(View.VISIBLE);
+                        getsprite();
                     } else if ((searchname.size() != searchsprite.size() && search)) {
                         isloading = true;
-                        getsprite();
                         load.setVisibility(View.VISIBLE);
+                        getsprite();
                     }
 
                 }
@@ -156,7 +130,44 @@ public class Items extends Fragment {
             }
         });
 
+        init(view);
 
+
+    }
+
+    void init(View view) {
+        if (all.size() == 0) {
+            Call<NameandUrlList> getallitems = json.getitemlistall();
+            getallitems.enqueue(new Callback<NameandUrlList>() {
+                @Override
+                public void onResponse(Call<NameandUrlList> call, Response<NameandUrlList> response) {
+                    if (!response.isSuccessful()) {
+                        Snackbar.make(view, "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                                .show();
+                        load.setVisibility(View.GONE);
+                        isloading = false;
+                        return;
+                    }
+                    assert response.body() != null;
+                    all.addAll(response.body().getResults());
+                    adapter.change(all, spritelink);
+                    getsprite();
+                }
+
+                @Override
+                public void onFailure(Call<NameandUrlList> call, Throwable t) {
+                    Snackbar.make(view, "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                            .show();
+                    load.setVisibility(View.GONE);
+                    isloading = false;
+                }
+            });
+        } else {
+            adapter.notifyDataSetChanged();
+            isloading = false;
+            load.setVisibility(View.GONE);
+        }
+        refresh.setRefreshing(false);
     }
 
     @Override
@@ -179,8 +190,13 @@ public class Items extends Fragment {
                 search = true;
                 if (newText == null || newText.length() == 0) {
                     search = false;
+                    isloading = false;
+                    load.setVisibility(View.GONE);
+                    Searchstring = "";
                     adapter.change(all, spritelink);
                 } else {
+                    isloading = true;
+                    load.setVisibility(View.VISIBLE);
                     searchname = new ArrayList<>();
                     searchsprite = new ArrayList<>();
                     adapter.change(searchname, searchsprite);
@@ -205,6 +221,7 @@ public class Items extends Fragment {
             for (int i = tempp; i < Math.min(tempp + 20, all.size()); i++) {
                 requests.add(json.getitem(all.get(i).getUrl()));
             }
+
             Observable.zip(requests, objects -> {
                 for (Object object : objects) {
                     itemmodel temp = (itemmodel) object;
@@ -252,7 +269,13 @@ public class Items extends Fragment {
             for (int i = tempp; i < Math.min(tempp + 20, searchname.size()); i++) {
                 requests.add(json.getitem(searchname.get(i).getUrl()));
             }
-            temp(Searchstring, requests);
+            if (requests.size() > 0) {
+                temp(Searchstring, requests);
+            } else {
+                isloading = false;
+                load.setVisibility(View.GONE);
+                Snackbar.make(requireView(), "Nothing left to load", BaseTransientBottomBar.LENGTH_LONG).show();
+            }
         }
 
 
@@ -324,7 +347,7 @@ public class Items extends Fragment {
             @Override
             public void onResponse(Call<itemmodel> call, Response<itemmodel> response) {
                 if (!response.isSuccessful()) {
-                    Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                    Snackbar.make(requireView(), "ID not found", BaseTransientBottomBar.LENGTH_LONG)
                             .show();
                     load.setVisibility(View.GONE);
                     isloading = false;
@@ -339,6 +362,8 @@ public class Items extends Fragment {
                     searchsprite.add(response.body().getSprite().getDefaultt());
                     searchname.add(temp);
                     adapter.change(searchname, searchsprite);
+                    load.setVisibility(View.GONE);
+                    isloading = false;
                 }
             }
 

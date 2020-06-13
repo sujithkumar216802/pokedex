@@ -26,6 +26,7 @@ import androidx.navigation.fragment.FragmentNavigator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -42,7 +43,6 @@ import com.sujithkumar.pokedex.model.PokemonEncounters;
 import com.sujithkumar.pokedex.model.RegionModel;
 import com.sujithkumar.pokedex.model.pokemon.PokemonData;
 import com.sujithkumar.pokedex.model.pokemon.pokemonspecies;
-import com.sujithkumar.pokedex.recyclerclicklistner;
 import com.sujithkumar.pokedex.retrofit;
 import com.sujithkumar.pokedex.viewmodel;
 
@@ -83,6 +83,7 @@ public class PokemonRegionPage extends Fragment {
     int totalitemcount = 0;
     int pastvisibleitemcount = 0;
     TextView title;
+    SwipeRefreshLayout refresh;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -101,10 +102,10 @@ public class PokemonRegionPage extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         rep = new ViewModelProvider((ViewModelStoreOwner) requireContext()).get(viewmodel.class);
+        refresh = view.findViewById(R.id.refresh);
         title = view.findViewById(R.id.textView2);
         title.setText("Region - " + rep.getRegion());
         json = retrofit.getapi().create(Json.class);
-        Call<RegionModel> getregion = json.getregion(rep.getRegion());
         if (regionname != rep.getRegion()) {
             spritelink = new ArrayList<>();
             pokemonData = new ArrayList<>();
@@ -124,59 +125,17 @@ public class PokemonRegionPage extends Fragment {
         search = false;
         isloading = true;
 
-
-        if (all.size() == 0)
-            getregion.enqueue(new Callback<RegionModel>() {
-                @Override
-                public void onResponse(Call<RegionModel> call, Response<RegionModel> response) {
-                    if (!response.isSuccessful()) {
-                        Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
-                                .show();
-                        load.setVisibility(View.GONE);
-                        isloading = false;
-                        return;
-                    }
-
-                    Call<MainGeneration> gen = json.getgeneration(response.body().getMain_generation().getUrl());
-                    gen.enqueue(new Callback<MainGeneration>() {
-                        @Override
-                        public void onResponse(Call<MainGeneration> call, Response<MainGeneration> response) {
-                            if (!response.isSuccessful()) {
-                                Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
-                                        .show();
-                                load.setVisibility(View.GONE);
-                                isloading = false;
-                                return;
-                            }
-                            for (NameandUrl x : response.body().getPokemon_species()) {
-                                call1(x);
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<MainGeneration> call, Throwable t) {
-                            Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
-                                    .show();
-                            load.setVisibility(View.GONE);
-                            isloading = false;
-                        }
-                    });
-
-
-                }
-
-                @Override
-                public void onFailure(Call<RegionModel> call, Throwable t) {
-                    Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
-                            .show();
-                    load.setVisibility(View.GONE);
-                    isloading = false;
-                }
-            });
-        else {
-            isloading = false;
-            load.setVisibility(View.GONE);
-        }
+        refresh.setOnRefreshListener(() -> {
+            spritelink = new ArrayList<>();
+            pokemonData = new ArrayList<>();
+            all = new ArrayList<>();
+            searchname = new ArrayList<>();
+            searchsprite = new ArrayList<>();
+            evolutionlist = new ArrayList<>();
+            hideKeyboard();
+            Navigation.findNavController(view).navigate(R.id.action_pokemonRegionPage_self);
+        });
+        init(view);
 
 
         recycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -207,8 +166,6 @@ public class PokemonRegionPage extends Fragment {
 
             }
         });
-
-
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
@@ -303,6 +260,63 @@ public class PokemonRegionPage extends Fragment {
 
     }
 
+    void init(View view) {
+        Call<RegionModel> getregion = json.getregion(rep.getRegion());
+        if (all.size() == 0)
+            getregion.enqueue(new Callback<RegionModel>() {
+                @Override
+                public void onResponse(Call<RegionModel> call, Response<RegionModel> response) {
+                    if (!response.isSuccessful()) {
+                        Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                                .show();
+                        load.setVisibility(View.GONE);
+                        isloading = false;
+                        return;
+                    }
+
+                    Call<MainGeneration> gen = json.getgeneration(response.body().getMain_generation().getUrl());
+                    gen.enqueue(new Callback<MainGeneration>() {
+                        @Override
+                        public void onResponse(Call<MainGeneration> call, Response<MainGeneration> response) {
+                            if (!response.isSuccessful()) {
+                                Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                                        .show();
+                                load.setVisibility(View.GONE);
+                                isloading = false;
+                                return;
+                            }
+                            for (NameandUrl x : response.body().getPokemon_species()) {
+                                call1(x);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<MainGeneration> call, Throwable t) {
+                            Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                                    .show();
+                            load.setVisibility(View.GONE);
+                            isloading = false;
+                        }
+                    });
+
+
+                }
+
+                @Override
+                public void onFailure(Call<RegionModel> call, Throwable t) {
+                    Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
+                            .show();
+                    load.setVisibility(View.GONE);
+                    isloading = false;
+                }
+            });
+        else {
+            isloading = false;
+            load.setVisibility(View.GONE);
+        }
+        refresh.setRefreshing(false);
+    }
+
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
@@ -323,6 +337,9 @@ public class PokemonRegionPage extends Fragment {
                 search = true;
                 if (newText == null || newText.length() == 0) {
                     search = false;
+                    isloading = false;
+                    load.setVisibility(View.GONE);
+                    Searchstring = "";
                     adapter.change(all, spritelink);
                 } else {
                     Searchstring = newText;
@@ -389,7 +406,13 @@ public class PokemonRegionPage extends Fragment {
             for (int i = tempp; i < Math.min(tempp + 20, searchname.size()); i++) {
                 requests.add(json.getpokemon(searchname.get(i).getUrl()));
             }
-            temp(Searchstring, requests);
+            if (requests.size() > 0)
+                temp(Searchstring, requests);
+            else {
+                isloading = false;
+                load.setVisibility(View.GONE);
+                Snackbar.make(requireView(), "Nothing left to load", BaseTransientBottomBar.LENGTH_LONG).show();
+            }
 
         }
 
@@ -454,6 +477,7 @@ public class PokemonRegionPage extends Fragment {
 
         adapter.change(searchname, searchsprite);
         isloading = true;
+        load.setVisibility(View.VISIBLE);
         getsprite();
     }
 
@@ -533,10 +557,17 @@ public class PokemonRegionPage extends Fragment {
 
             @Override
             public void onFailure(Call<pokemonspecies> call, Throwable t) {
+                spritelink = new ArrayList<>();
+                pokemonData = new ArrayList<>();
+                all = new ArrayList<>();
+                searchname = new ArrayList<>();
+                searchsprite = new ArrayList<>();
+                evolutionlist = new ArrayList<>();
                 Snackbar.make(requireView(), "Network Issue , Please Reload", BaseTransientBottomBar.LENGTH_LONG)
                         .show();
                 load.setVisibility(View.GONE);
                 isloading = false;
+
             }
         });
 

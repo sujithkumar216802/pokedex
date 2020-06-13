@@ -1,6 +1,5 @@
 package com.sujithkumar.pokedex.adapter;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,7 +84,6 @@ public class RecycleAdapter extends RecyclerView.Adapter<RecycleAdapter.viewhold
     public void change(ArrayList<NameandUrl> n, ArrayList<String> x) {
         sprite = new ArrayList<>(x);
         name = new ArrayList<>(n);
-        Log.i("wlajehdiklhxwa;lsdjfcx;ASWkxaw", name.size() + "\n" + sprite.size());
         notifyDataSetChanged();
     }
 

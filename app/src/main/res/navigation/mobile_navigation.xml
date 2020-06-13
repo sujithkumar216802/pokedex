@@ -8,28 +8,54 @@
     <fragment
         android:id="@+id/nav_pokemon"
         android:name="com.sujithkumar.pokedex.ui.Pokemon"
-        tools:layout="@layout/pokemon" />
+        tools:layout="@layout/pokemon" >
+        <action
+            android:id="@+id/action_nav_pokemon_self"
+            app:destination="@id/nav_pokemon"
+            app:popUpTo="@id/nav_pokemon"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_item"
         android:name="com.sujithkumar.pokedex.ui.Items"
-        tools:layout="@layout/items" />
+        tools:layout="@layout/items" >
+        <action
+            android:id="@+id/action_nav_item_self"
+            app:destination="@id/nav_item"
+            app:popUpTo="@id/nav_item"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_region"
         android:name="com.sujithkumar.pokedex.ui.Region"
-        tools:layout="@layout/region" />
+        tools:layout="@layout/region" >
+        <action
+            android:id="@+id/action_nav_region_self"
+            app:destination="@id/nav_region"
+            app:popUpTo="@id/nav_region"
+            app:popUpToInclusive="true" />
+    </fragment>
     <fragment
         android:id="@+id/nav_type"
         android:name="com.sujithkumar.pokedex.ui.Type"
-        tools:layout="@layout/type" />
+        tools:layout="@layout/type" >
+        <action
+            android:id="@+id/action_nav_type_self"
+            app:destination="@id/nav_type"
+            app:popUpTo="@id/nav_type"
+            app:popUpToInclusive="true" />
+    </fragment>
     <fragment
         android:id="@+id/nav_location"
         android:name="com.sujithkumar.pokedex.ui.Location"
         tools:layout="@layout/location">
         <action
-            android:id="@+id/action_nav_location_to_pokemonDataPage"
-            app:destination="@id/pokemonDataPage" />
+            android:id="@+id/action_nav_location_self"
+            app:destination="@id/nav_location"
+            app:popUpTo="@id/nav_location"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/pokemonDataPage"
@@ -45,10 +71,22 @@
         android:name="com.sujithkumar.pokedex.ui.Favourite" />
     <fragment
         android:id="@+id/pokemonTypelist"
-        android:name="com.sujithkumar.pokedex.ui.PokemonTypePage" />
+        android:name="com.sujithkumar.pokedex.ui.PokemonTypePage" >
+        <action
+            android:id="@+id/action_pokemonTypelist_self"
+            app:destination="@id/pokemonTypelist"
+            app:popUpTo="@id/pokemonTypelist"
+            app:popUpToInclusive="true" />
+    </fragment>
     <fragment
         android:id="@+id/pokemonRegionPage"
-        android:name="com.sujithkumar.pokedex.ui.PokemonRegionPage" />
+        android:name="com.sujithkumar.pokedex.ui.PokemonRegionPage" >
+        <action
+            android:id="@+id/action_pokemonRegionPage_self"
+            app:destination="@id/pokemonRegionPage"
+            app:popUpTo="@id/pokemonRegionPage"
+            app:popUpToInclusive="true" />
+    </fragment>
     <fragment
         android:id="@+id/favouritePokemonDataPage"
         android:name="com.sujithkumar.pokedex.ui.FavouritePokemonDataPage" />

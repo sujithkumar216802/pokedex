@@ -14,7 +14,7 @@
 
 
     <style name="textview" parent="android:Widget.TextView">
-        <item name="android:fontFamily">@font/paprika</item>
+        <item name="android:fontFamily">@font/chewy</item>
     </style>
 
     <style name="DrawerArrowStyle" parent="@style/Widget.AppCompat.DrawerArrowToggle">

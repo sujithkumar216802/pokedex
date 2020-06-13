@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelStoreOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.transition.TransitionInflater;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -57,13 +58,14 @@ public class PokemonDataPage extends Fragment {
     LinearLayoutManager abilitylayout, movelayout, evolutionlayout;
     viewmodel rep;
     PokemonData pokemonData;
-    TextView name, height, weight, base_experience, hp, attack, defence, specialattack, specialdefence, speed, type,notavailable;
+    TextView name, height, weight, base_experience, hp, attack, defence, specialattack, specialdefence, speed, type, notavailable, id;
     ImageView imageView;
     Json json;
     ArrayList<NameandUrl> abilitylist = new ArrayList<>();
     ArrayList<NameandUrl> movelist = new ArrayList<>();
     ArrayList<NameandUrl> evolutionlist = new ArrayList<>();
     ImageButton Share;
+    SwipeRefreshLayout refresh;
 
 
     @Override
@@ -83,13 +85,10 @@ public class PokemonDataPage extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initiate(view);
-        json = retrofit.getapi().create(Json.class);
-        NameandUrl temp = new NameandUrl();
-        temp.setName(pokemonData.getName());
-        evolutionlist.add(temp);
-        Call<pokemonspecies> evouel = json.getpokemonspecies(pokemonData.getSpecies().getUrl());
-        evolutioncall(evouel);
-        abilityandmovesetup();
+        refresh.setOnRefreshListener(() -> {
+            Call<pokemonspecies> e = json.getpokemonspecies(pokemonData.getSpecies().getUrl());
+            evolutioncall(e);
+        });
     }
 
 
@@ -106,6 +105,9 @@ public class PokemonDataPage extends Fragment {
 
 
     void initiate(View view) {
+        json = retrofit.getapi().create(Json.class);
+        id = view.findViewById(R.id.ID);
+        refresh = view.findViewById(R.id.refresh);
         notavailable = view.findViewById(R.id.notavailable);
         name = view.findViewById(R.id.name);
         height = view.findViewById(R.id.height);
@@ -124,6 +126,29 @@ public class PokemonDataPage extends Fragment {
         move = view.findViewById(R.id.move);
         evolution = view.findViewById(R.id.evolution);
         rep = new ViewModelProvider((ViewModelStoreOwner) requireContext()).get(viewmodel.class);
+
+
+        if (pokemonData != null) {
+            if (rep.getCurrentpokemon() != pokemonData) {
+                pokemonData = rep.getCurrentpokemon();
+                NameandUrl temp = new NameandUrl();
+                temp.setName(pokemonData.getName());
+                evolutionlist.add(temp);
+                Call<pokemonspecies> evouel = json.getpokemonspecies(pokemonData.getSpecies().getUrl());
+                evolutioncall(evouel);
+                abilityandmovesetup();
+            }
+        } else {
+            pokemonData = rep.getCurrentpokemon();
+            NameandUrl temp = new NameandUrl();
+            temp.setName(pokemonData.getName());
+            evolutionlist.add(temp);
+            Call<pokemonspecies> evouel = json.getpokemonspecies(pokemonData.getSpecies().getUrl());
+            evolutioncall(evouel);
+            abilityandmovesetup();
+        }
+
+
         pokemonData = rep.getCurrentpokemon();
         setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(R.transition.sharedelementtransition));
         imageView.setTransitionName(pokemonData.getName());
@@ -140,12 +165,13 @@ public class PokemonDataPage extends Fragment {
                     startPostponedEnterTransition();
                 }
             });
-        else{
+        else {
             notavailable.setVisibility(View.VISIBLE);
             startPostponedEnterTransition();
         }
 
 
+        id.setText("ID : " + pokemonData.getId());
         name.setText("Name : " + pokemonData.getName());
         height.setText("Height : " + pokemonData.getHeight());
         weight.setText("Weight : " + pokemonData.getWeight());
@@ -228,6 +254,7 @@ public class PokemonDataPage extends Fragment {
             public void onResponse(Call<pokemonspecies> call, Response<pokemonspecies> response) {
                 if (!response.isSuccessful()) {
                     Snackbar.make(requireView(), "Network issue , evolution cannot be loaded", BaseTransientBottomBar.LENGTH_LONG).show();
+                    refresh.setRefreshing(false);
                     return;
                 }
 
@@ -239,13 +266,13 @@ public class PokemonDataPage extends Fragment {
                     Collections.reverse(evolutionlist);
                     evolutionadapter.notifyDataSetChanged();
                 }
-
-
+                refresh.setRefreshing(false);
             }
 
             @Override
             public void onFailure(Call<pokemonspecies> call, Throwable t) {
                 Snackbar.make(requireView(), "Network issue , evolution cannot be loaded", BaseTransientBottomBar.LENGTH_LONG).show();
+                refresh.setRefreshing(false);
             }
         });
     }
